@@ -4,7 +4,7 @@ $config = require 'config.php';
 $curl= new \Curl\Curl();
 
 $request = $curl->post($config['baseApi'].'members',$_POST);
-
+// var_dump($request);die;
 $result=$request;
 
 $result=[

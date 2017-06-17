@@ -6,20 +6,17 @@
 
   <title>Memberships</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+  <link href="assets/bootstrap.css" rel="stylesheet" id="bootstrap-css">
   <link rel="stylesheet" type="text/css" href="assets/datatables/datatables.min.css"/>
 
   <style type="text/css">
 
   </style>
-  <script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
-  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
-<!-- 
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-<script src="http://getbootstrap.com/dist/js/bootstrap.min.js"></script> -->
-<script type="text/javascript" src="assets/datatables/datatables.min.js"></script>
-<script type="text/javascript">
-  // window.alert = function(){};
+  <script src="assets/jquery.js"></script>
+  <script src="assets/bootstrap.min.js"></script>
+  <script type="text/javascript" src="assets/datatables/datatables.min.js"></script>
+  <script type="text/javascript">
+  
   var defaultCSS = document.getElementById('bootstrap-css');
   function changeCSS(css){
     if(css) $('head > link').filter(':first').replaceWith('<link rel="stylesheet" href="'+ css +'" type="text/css" />'); 
@@ -33,6 +30,7 @@
     <div class="row">
       <div class="col-md-12">
         <h4>Memberships</h4>
+        <button class="btn btn-primary btn-xs" onClick="$.addDialog()" >Add New</button>
         <div class="table-responsive">
           <table id="mytable" class="table table-bordred table-striped">
             <thead>
@@ -47,21 +45,7 @@
               <th>Delete</th>
             </thead>
             <tbody>
-              <!-- <tr>
-                <td><input type="checkbox" class="checkthis" /></td>
-                <td>Mohsin</td>
-                <td>Irshad</td>
-                <td>CB 106/107 Street # 11 Wah Cantt Islamabad Pakistan</td>
-                <td>isometric.mohsin@gmail.com</td>
-                <td>+923335586757</td>
-                <td>
-
-                <p data-placement="top" data-toggle="tooltip" title="Edit"><button class="btn btn-primary btn-xs" data-title="Edit" data-toggle="modal" data-target="#edit" ><span class="glyphicon glyphicon-pencil"></span></button></p>
-                </td>
-                <td>
-
-                <p data-placement="top" data-toggle="tooltip" title="Delete"><button class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#delete" ><span class="glyphicon glyphicon-trash"></span></button></p></td>
-              </tr> -->
+ 
             </tbody>
           </table>
         </div>
@@ -131,6 +115,25 @@
   </div>
   <script type="text/javascript">
     $(document).ready(function(){
+      $.addDialog = function(){
+        $('#Heading').text("Add New Data");
+        $('#edit input[name=first_name]').attr('placeholder','First Name');
+        $('#edit input[name=last_name]').attr('placeholder','Last Name');
+        $('#edit input[name=email]').attr('placeholder','Email');
+        $('#edit input[name=contact]').attr('placeholder','Contact');
+        $('#edit textarea[name=address]').attr('placeholder','Address');
+        
+        $('#edit input[name=first_name]').val('');
+        $('#edit input[name=last_name]').val('');
+        $('#edit input[name=email]').val('');
+        $('#edit input[name=contact]').val('');
+        $('#edit textarea[name=address]').html('');
+        $('#edit input[name=_id]').val('');
+
+        $('#btnUpdate').removeAttr('disabled');
+        $('#btnUpdate').html('<span class="glyphicon glyphicon-ok-sign"></span>Save'); 
+        $('#edit').modal();
+      };
       $.deleteDialog=function(el){
         $('#confirmDelete').removeAttr('disabled');
         $('#confirmDelete').html('<span class="glyphicon glyphicon-ok-sign"></span>Yes');
@@ -140,6 +143,7 @@
         $('#delete').modal();
       }
       $.editDialog = function(el){
+        $('#Heading').text("Edit Data");
         var rowData =  $(el).closest('tr');
         rowData=myTable.row(rowData).data();
         $('#edit input[name=first_name]').attr('placeholder',rowData.first_name);
@@ -206,10 +210,29 @@
 
       $("[data-toggle=tooltip]").tooltip();
       $('#confirmDelete').click(function(ev){
+        var member_id = $(this).data('id');
         $(this).attr('disabled','disabled');
         
         $('#confirmDelete').html('<span class="glyphicon glyphicon-ok-sign"></span>Please Wait');
-        // $('#delete').modal('toggle');
+        $.ajax({
+          url:'operations.php?type=delete',
+          data:{
+            _id:member_id
+          },
+          dataType:'JSON',
+          type:'POST',
+          success:function(response){
+            if('failed'==response.status){
+              alert(response.message);
+            }
+            myTable.ajax.reload();
+          },
+
+          complete:function(){
+           $('#delete').modal('toggle'); 
+          }
+        })
+        // 
       });
       $('#membersForm').submit(function(e){
         var form=$(this);
